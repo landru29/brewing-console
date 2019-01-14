@@ -32,3 +32,8 @@ void Screen::init() {
   drawBitmap((WIDTH - landruSplash_width) / 2, (HEIGHT - landruSplash_height) / 2,
       landruSplash_data, landruSplash_width, landruSplash_height, 1);
 }
+
+void Screen::clearLine(uint8_t line) {
+  setCursor(0, line);
+  println("                             ");
+}

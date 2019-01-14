@@ -9,12 +9,21 @@
 int maxFreq = 65000;
 
 Keyboard customKeypad = Keyboard();
-String data = String();
+char buf[BUFFER_SIZE];
+char bufIndex = 0;
+
+
+void resetBuffer() {
+  memset(buf,0,BUFFER_SIZE);
+  bufIndex = 0;
+}
 
 
 void setup() {
   //initMotor();
   //gotoFreq(maxFreq);
+
+  resetBuffer();
 
   Wire.begin(0x12);  // https://github.com/mchobby/I2C_Intro/tree/master/01_MasterReader/MasterReader_Esclave
   Wire.onRequest(requestEvent);
@@ -22,11 +31,8 @@ void setup() {
 
 void requestEvent()
 {
-  char buf[BUFFER_SIZE];
-  memset(buf,0,BUFFER_SIZE);
-  data.toCharArray(buf, BUFFER_SIZE);
-  data = String();
-  Wire.write(buf); 
+  Wire.write(buf);
+  resetBuffer();
 }
 
 
@@ -35,7 +41,7 @@ void loop() {
 
   char customKey = customKeypad.getKey();
   
-  if (customKey){
-    data = data + String(customKey);
+  if ((customKey) && (bufIndex < BUFFER_SIZE - 1)){
+    buf[bufIndex++] = customKey;
   }
 }
