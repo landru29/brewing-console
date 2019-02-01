@@ -6,7 +6,9 @@
 
 #define BUFFER_SIZE 20
 
-int maxFreq = 65000;
+float maxFreq = 65000.0;
+float minFreq = 5000.0;
+float currentFreq = minFreq;
 
 Keyboard customKeypad = Keyboard();
 char buf[BUFFER_SIZE];
@@ -20,8 +22,8 @@ void resetBuffer() {
 
 
 void setup() {
-  //initMotor();
-  //gotoFreq(maxFreq);
+  initMotor();
+  gotoFreq(currentFreq);
 
   resetBuffer();
 
@@ -36,6 +38,35 @@ void requestEvent()
 }
 
 
+void setMaxSpeed() {
+  currentFreq = maxFreq;
+  setEnable(true);
+  gotoFreq(currentFreq);
+}
+
+void stopMotor() {
+  currentFreq = minFreq;
+  setEnable(false);
+  setFrequency(currentFreq);
+}
+
+void increaseSpeed() {
+  currentFreq *= 1.2;
+  if (currentFreq > maxFreq) {
+    currentFreq = maxFreq;
+  }
+  setEnable(true);
+  gotoFreq(currentFreq);
+}
+
+void decreaseSpeed() {
+  currentFreq /= 1.2;
+  setEnable(true);
+  if (currentFreq < minFreq) {
+    currentFreq = minFreq;
+  }
+  gotoFreq(currentFreq);
+}
 
 void loop() {
 
@@ -43,5 +74,20 @@ void loop() {
   
   if ((customKey) && (bufIndex < BUFFER_SIZE - 1)){
     buf[bufIndex++] = customKey;
+
+    switch(customKey) {
+      case 'A':
+        setMaxSpeed();
+        break;
+      case 'B':
+        increaseSpeed();
+        break;
+      case 'C':
+        decreaseSpeed();
+        break;
+      case 'D':
+        stopMotor();
+        break;
+    }
   }
 }

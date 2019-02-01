@@ -4,6 +4,7 @@ unsigned int microseconds = 600;
 unsigned int timer1_counter;
 unsigned int frequencyHz;
 unsigned int targetHz;
+bool enabled = false;
 int stable;
 
 unsigned int getPreload() {
@@ -25,6 +26,7 @@ void stepFrequency() {
 
 ISR(TIMER1_OVF_vect)        // interrupt service routine 
 {
+  if (!enabled) return;
   stable--;
   if (stable<=0) {
     stable = frequencyHz / 50;
@@ -60,13 +62,26 @@ void gotoFreq(unsigned int f) {
   targetHz = f;
 }
 
+void setEnable(bool state) {
+  if (state == enabled) {
+    return;
+  }
+  if (state) {
+    digitalWrite(ENA, HIGH);
+  } else {
+    digitalWrite(ENA, LOW);
+  }
+  delay(500);
+  enabled = state;
+}
+
 void initMotor() {
   pinMode(ENA, OUTPUT);
   pinMode(DIR, OUTPUT);
   pinMode(PLS, OUTPUT);
-  digitalWrite(ENA, HIGH);
+  //digitalWrite(ENA, HIGH);
   digitalWrite(DIR, HIGH);
   digitalWrite(PLS, HIGH);
-  delay(500);
+  //delay(500);
   timerSetup ();
 }

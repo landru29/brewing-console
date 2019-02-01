@@ -16,6 +16,8 @@
 
 void gotoFreq(unsigned int f);
 void initMotor();
+void setEnable(bool state);
+void setFrequency (unsigned int hz);
 
 
 
