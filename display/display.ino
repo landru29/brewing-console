@@ -13,7 +13,7 @@ void setup() {
   delay(2000); // Pause for 2 seconds
 
   display.clearDisplay();
-  display.setTextSize(0); 
+  display.setTextSize(2); 
   display.setTextColor(WHITE, BLACK); 
   display.display();
 }
@@ -29,8 +29,9 @@ void readKeyboard() {
     data[i++] = (c == 0xFF ? 0 : c);
     
   }
-  display.clearLine(8);
-  display.setCursor(0, 8);
+  display.setTextSize(0);
+  display.clearLine(0);
+  display.setCursor(0, 0);
   display.println(data);
   display.display();
 }
@@ -39,7 +40,8 @@ void loop() {
   
   if (getAddress()) {
     float celcius = performMeasure();
-    display.setCursor(8,0);
+    display.setTextSize(2);
+    display.setCursor(8,8);
     display.println(String(celcius));
     display.display();
 

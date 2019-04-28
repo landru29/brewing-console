@@ -35,5 +35,5 @@ void Screen::init() {
 
 void Screen::clearLine(uint8_t line) {
   setCursor(0, line);
-  println("                             ");
+  println("                      ");
 }
