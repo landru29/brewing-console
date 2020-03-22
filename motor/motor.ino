@@ -73,7 +73,6 @@ void loop() {
   char customKey = customKeypad.getKey();
   
   if ((customKey) && (bufIndex < BUFFER_SIZE - 1)){
-    buf[bufIndex++] = customKey;
 
     switch(customKey) {
       case 'A':
@@ -88,6 +87,8 @@ void loop() {
       case 'D':
         stopMotor();
         break;
+      default:
+        buf[bufIndex++] = customKey;
     }
   }
 }

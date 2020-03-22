@@ -4,49 +4,30 @@
 
 #include <OneWire.h>
 #include <Wire.h>
+//#include <malloc.h>
 
-OneWire  ds(12);  // on pin D4 (a 4.7K resistor is necessary)
-byte addr[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
-/**
- * True if at least one sensor was found
- * @return true if found
- */
-bool sensorFound() {
-  return ((addr[0]) || (addr[1]) || (addr[2]) || (addr[3]) || (addr[4]) || (addr[5]) || (addr[6]) || (addr[7]));
-}
+OneWire  ds(TEMPERATURE_PIN);  // on pin D12 (a 4.7K resistor is necessary)
+//byte addr[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
-/**
- * Get a temperature sensor address
- * @return True if an address was found, False if no more address
- */
-bool getAddress() {
-  if (!sensorFound()) {
-    if ( !ds.search(addr)) {
-      Serial.println("No more addresses.");
-      ds.reset_search();
-      return false;
-    }
+
+static int Temperature::count = 0;
+static Temperature** Temperature::sensor = (Temperature**)malloc(0);
+
+Temperature::Temperature(byte* address) {
+  for (int i=0; i<8; i++) {
+    this->addr[i] = address[i];
   }
-  return true;
 }
 
-/**
- * Launch a measure on a sensor
- * @return Temperature in celcius
- */
-float performMeasure() {
+float Temperature::performMeasure() {
   byte type_s;
   byte data[12];
   byte i;
   byte present = 0;
 
-  if (!sensorFound()) {
-    return 0;
-  }
-
    // the first ROM byte indicates which chip
-  switch (addr[0]) {
+  switch (this->addr[0]) {
     case 0x10:
       type_s = 1;
       break;
@@ -57,19 +38,18 @@ float performMeasure() {
       type_s = 0;
       break;
     default:
-      Serial.println("Device is not a DS18x20 family device.");
       return 0;
   } 
 
   ds.reset();
-  ds.select(addr);
+  ds.select(this->addr);
   ds.write(0x44, 1);        // start conversion, with parasite power on at the end
   
   delay(1000);     // maybe 750ms is enough, maybe not
   // we might do a ds.depower() here, but the reset will take care of it.
   
   present = ds.reset();
-  ds.select(addr);    
+  ds.select(this->addr);    
   ds.write(0xBE);         // Read Scratchpad
 
   for ( i = 0; i < 9; i++) {           // we need 9 bytes
@@ -95,5 +75,36 @@ float performMeasure() {
     else if (cfg == 0x40) raw = raw & ~1; // 11 bit res, 375 ms
     //// default is 12 bit resolution, 750 ms conversion time
   }
+
   return (float)raw / 16.0;
+}
+
+static void Temperature::searchSensors() {
+  bool more = true;
+  byte addr[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+
+  ds.reset_search();
+    
+  while (true) {
+    Serial.println("Searching sensor ...");
+    if (!ds.search(addr)) {
+      Serial.println("No more sensor");
+      return;
+    }
+    
+    Serial.println("  => Found something");
+    switch (addr[0]) {
+      case 0x10:
+      case 0x28:
+      case 0x22:
+        Serial.println("     ---> This is a sensor !");
+        Temperature::count++;
+        Temperature::sensor = (Temperature**)realloc(Temperature::sensor, Temperature::count * sizeof(Temperature*));
+        Temperature::sensor[Temperature::count-1] = new Temperature(addr);
+        break;
+      default:
+        Serial.println("Device is not a DS18x20 family device:");
+        Serial.println(addr[0]);
+    } 
+  }
 }
